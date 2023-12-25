@@ -192,3 +192,8 @@ class ContourImageProcessor:
         self.canvas.config(width=self.tk_image.width(), height=self.tk_image.height())
         self.canvas.create_image(0, 0, anchor="nw", image=self.tk_image)
         self.canvas.image = self.tk_image
+
+if __name__ == "__main__":
+    root = Tk()
+    app = ContourImageProcessor(root)
+    root.mainloop()
