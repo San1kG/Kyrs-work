@@ -96,3 +96,64 @@ def canny_edge_detector(gray_image, low_threshold_ratio=0.05, high_threshold_rat
     edges = hysteresis(thresholded_image, weak_i, weak_j)
 
     return edges
+
+class ContourImageProcessor:
+
+    def select_image(self):
+        file_types = [("JPEG files", "*.jpg;*.jpeg"), ("PNG files", "*.png")]
+        input_image_path = Path(filedialog.askopenfilename(filetypes=file_types))
+
+        if not input_image_path.exists():
+            print('The specified input file does not exist')
+            return
+
+        self.image_path = input_image_path
+        self.pil_image = Image.open(input_image_path)
+        self.display_image(self.pil_image)
+
+    def apply_canny_algorithm(self, image, canny_threshold):
+        # Преобразовать изображение PIL в массив NumPy
+        np_image = np.array(image)
+        # Обработка изображения
+        gray_image = cv2.cvtColor(np_image, cv2.COLOR_BGR2GRAY)
+        edges = canny_edge_detector(gray_image, canny_threshold / 255, (canny_threshold * 2) / 255)
+        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contour_image = np.zeros_like(np_image)
+        cv2.drawContours(contour_image, contours, -1, (255, 255, 255), 1)
+        return contour_image
+
+    def create_contour_image(self):
+        if not self.pil_image:
+            print("Please select an image first.")
+            return
+        
+        canny_threshold = self.threshold_scale.get()
+        self.contour_image = self.apply_canny_algorithm(self.pil_image, canny_threshold)
+        self.display_image(Image.fromarray(self.contour_image))
+
+    def show_original_image(self):
+        if self.pil_image:
+            self.display_image(self.pil_image)
+
+    def save_image(self):
+        if self.contour_image is not None:
+            file_types = [("JPEG files", "*.jpg;*.jpeg"), ("PNG files", "*.png")]
+            output_file_path = Path(filedialog.asksaveasfilename(filetypes=file_types, defaultextension=".png"))
+
+            if output_file_path:
+                Image.fromarray(self.contour_image).save(output_file_path)
+                print(f"Image saved successfully to {output_file_path}")
+        else:
+            print("No contour image to save. Create one first.")
+
+    def display_image(self, image):
+        # Define the region of interest (ROI) coordinates (left, top, right, bottom)
+        roi_coords = (100, 50, 500, 350)
+
+        # Resize the image based on the ROI
+        image = image.resize((roi_coords[2] - roi_coords[0], roi_coords[3] - roi_coords[1]))
+
+        self.tk_image = ImageTk.PhotoImage(image)
+        self.canvas.config(width=self.tk_image.width(), height=self.tk_image.height())
+        self.canvas.create_image(0, 0, anchor="nw", image=self.tk_image)
+        self.canvas.image = self.tk_image
