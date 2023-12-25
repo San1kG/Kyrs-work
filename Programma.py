@@ -98,6 +98,41 @@ def canny_edge_detector(gray_image, low_threshold_ratio=0.05, high_threshold_rat
     return edges
 
 class ContourImageProcessor:
+    def __init__(self, master):
+        self.master = master
+        self.master.geometry("800x600")
+        self.master.title("Contour Image Creator")
+        self.master.configure(bg="white")
+
+        self.pil_image = None
+        self.image_path = None
+        self.contour_image = None
+        self.tk_image = None  # Store tk_image as an instance variable
+
+        self.create_widgets()
+
+    def create_widgets(self):
+        self.canvas = Canvas(self.master, width=600, height=400)
+        self.canvas.grid(row=0, column=0, padx=20, pady=20, rowspan=5)
+
+        select_button = Button(self.master, text="Select Image", command=self.select_image)
+        select_button.grid(row=0, column=1, padx=20, pady=10)
+
+        create_button = Button(self.master, text="Create Contour Image", command=self.create_contour_image)
+        create_button.grid(row=1, column=1, padx=20, pady=10)
+
+        self.threshold_label = Label(self.master, text="Canny Threshold:")
+        self.threshold_label.grid(row=2, column=1, padx=20, pady=10)
+
+        self.threshold_scale = Scale(self.master, from_=0, to=50, orient="horizontal", length=200)
+        self.threshold_scale.set(100)
+        self.threshold_scale.grid(row=3, column=1, padx=20, pady=10)
+
+        show_original_button = Button(self.master, text="Show Original Image", command=self.show_original_image)
+        show_original_button.grid(row=4, column=1, padx=20, pady=10)
+
+        save_button = Button(self.master, text="Save Image", command=self.save_image)
+        save_button.grid(row=5, column=1, padx=20, pady=10)
 
     def select_image(self):
         file_types = [("JPEG files", "*.jpg;*.jpeg"), ("PNG files", "*.png")]
